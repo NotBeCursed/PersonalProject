@@ -1,0 +1,33 @@
+version: "3.5"
+
+services:
+ db:
+  container_name: auth_db
+  hostname: auth_database
+  restart: unless-stopped
+  image: docker.io/mariadb:11.2.2
+  environment:
+   MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+   MARIADB_DATABASE: ${MARIADB_DATABASE}
+   MARIADB_USER: ${MARIADB_USER}
+   MARIADB_PASSWORD: ${MARIADB_PASSWORD} 
+  volumes:
+   - volume_auth_db:/var/lib/mysql
+
+ app:
+  container_name: auth_app
+  hostname: auth_app
+  image: nginx:alpine
+  restart: unless-stopped
+  depends_on: 
+   - db
+  volumes :
+   - volume_auth_app:/usr/share/nginx/html
+  ports:
+   - 8080:80
+
+volumes:
+ volume_auth_db:
+  name: volume_auth_db
+ volume_auth_app:
+  name: volume_auth_app
