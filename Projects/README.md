@@ -4,15 +4,15 @@ This directory is dedicated to learning about Cybersecurity through various proj
 
 - [AI Project](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/AI%20Project)  
 - [Bug Bounty Programs](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Bug%20Bounty%20Programs)
-- [[Projects/Digital Forensics Basics/README|Digital Forensics Basics]]
-- [[Projects/Hash Function/README|Hash Function]]
-- [[Projects/Keylogger/README|Keylogger]]
-- [[Projects/Log Analyzer/README|Log Analyzer]]
-- [[Projects/Malvare Analysis/README|Malvare Analysis]]
-- [[Projects/Password Manager/README|Password Manager]]
-- [[Projects/Proxy Configuration/README|Proxy Configuration]]
-- [[Projects/Secure Private Computer Network/README|Secure Private Computer Network]]
-- [[Projects/Setup a Honeypot/README|Setup a Honeypot]]
-- [[Projects/User Authentification Portal/README|User authentication portal]]
-- [[Projects/VPN Configuration/README|VPN Configuration]]
-- [[Projects/Wi-Fi Network Assessment/README|Wi-Fi Network Assessment]]
+- [Digital Forensics Basics](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Digital%20Forensics%20Basics)
+- [Hash Function](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Hash%20Function)
+- [Keylogger](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Keylogger)
+- [Log Analyzer](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Log%20Analyzer)
+- [Malvare Analysis](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Malvare%20Analysis)
+- [Password Manager](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Password%20Manager)
+- [Proxy Configuration](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Proxy%20Configuration)
+- [Secure Private Computer Network](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Secure%20Private%20Computer%20Network)
+- [Setup a Honeypot](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Setup%20a%20Honeypot)
+- [User authentication portal](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/User%20Authentication%20Portal)
+- [VPN Configuration](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/VPN%20Configuration)
+- [Wi-Fi Network Assessment](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/Wi-Fi%20Network%20Assessment)
