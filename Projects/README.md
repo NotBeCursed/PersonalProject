@@ -1,9 +1,9 @@
 # Welcome
 
 This directory is dedicated to learning about Cybersecurity through various projects. The aim of these projects is to increase skills and knowledge by learning new tools and languages.
-[AI Project](Project/AI_Project/README.md)
-- [AI Project](Projects/AI Project/README.md)  
-- [[Projects/Bug Bounty Programs/README|Bug Bounty Programs]]
+
+- [AI Project](https://github.com/NotBeCursed/PersonalProject/tree/main/Projects/AI%20Project))  
+- [Bug Bounty Programs](Project/Bug%20Bounty%20Programs)
 - [[Projects/Digital Forensics Basics/README|Digital Forensics Basics]]
 - [[Projects/Hash Function/README|Hash Function]]
 - [[Projects/Keylogger/README|Keylogger]]
