@@ -72,10 +72,12 @@ minikube version
 
 ### Création du cluster Kubernetes avec Minikube
 À présent, il est temps de démarrer Minikube afin de créer notre premier cluster Kubernetes. La commande que nous allons exécuter va créer et configurer une machine virtuelle qui exécute un cluster Kubernetes à un seul nœud, elle configurera également notre installation de kubectl de manière à communiquer avec notre cluster.
-````bash
+```bash
 minikube start
 ```
+
 **Résultat**
+
 ```bash
 😄  minikube v1.2.0 on linux (amd64)
 💿  Downloading Minikube ISO ...
@@ -91,7 +93,7 @@ minikube start
 ```
 
 Si vous souhaitez utiliser votre machine physique en tant que noeud, alors utilisez l'option **--vm-driver** de la commande `minikube start` avec la valeur **none**. Cette option exécutera les composants Kubernetes sur votre machine hôte et non sur une machine virtuelle à condition de posséder le moteur Docker sur votre machine.
-````bash
+```bash
 minikube start --vm-dirver=none
 ```
 
@@ -106,7 +108,7 @@ minikube config -h
 
 ### Manipulation du cluster Kubernetes avec Minikube
 Commençons par vérifie l'état de notre cluster :
-````bash
+```bash
 minikube stauts
 ```
 On va utiliser l'outil kubectl afin de récupérer la liste des nœuds de notre cluster Kubernetes :
