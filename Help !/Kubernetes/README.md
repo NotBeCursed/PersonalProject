@@ -28,7 +28,7 @@ Kubernetes suit l’architecture maître-esclave, le maître plus communément a
 - **kube-proxy** : il active l'abstraction réseau du Service Kubernetes en maintenant les règles du réseau et permet l'exposition des services vers l'extérieur.
 - **Environnement d'exécution de conteneurs** : Il faut vous aussi une solution d'exécution d'applications conteneurisées, vous pouvez utiliser soit le moteur Docker mais Kubernetes prend également en charge l'utilisation de rkt comme moteur d'exécution du conteneur.
 
-![image-architecture-kubernetes](kubernetes-cluster-architecture.jpg)
+![image-architecture-kubernetes](./.source/kubernetes-cluster-architecture.jpg)
 
 ### Prérequis
 #### Hyperviseur
