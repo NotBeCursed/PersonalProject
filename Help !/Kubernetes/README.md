@@ -30,118 +30,134 @@ Kubernetes suit l’architecture maître-esclave, le maître plus communément a
 
 ![image-architecture-kubernetes](./.source/kubernetes-cluster-architecture.jpg)
 
-### Prérequis
-#### Hyperviseur
-Il faut tout d'abord s'assurer que la virtualisation est prise en charge sous notre machine Linux :
+### Installation
+#### Désactiver l'espace Swap
 ```bash
-egrep --color 'vmx|svm' /proc/cpuinfo
+sudo swapoff -a
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 ```
-Vérifiez ensuite que la sortie est non vide. Si c'est bien le cas, alors vous pouvez passer à l'étape suivante.
-La prochaine étape consiste à installer un hyperviseur. 
+#### Ajouter des modules Kernel
+```bash
+sudo tee /etc/modules-load.d/containerd.conf <<EOF
+overlay
+br_netfilter
+EOF
 
-#### Kubectl
-Il est recommandé au préalable d'installer kubectl, afin d'interagir avec notre cluster Kubernetes.
-Pour ce faire, premièrement commençons par installer le binaire kubectl :
-```bash
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \ 
-chmod +x kubectl
+sudo modprobe overlay
+sudo modprobe br_netfilter
 ```
-Après cela, déplaçons le binaire kubectl dans le dossier d'exécution des utilisateurs :
+Editer les paramètres kernel :
 ```bash
-sudo mv ./kubectl /usr/local/bin/kubectl
+sudo vim /etc/sysctl.d/k8s.conf
 ```
-Enfin, testons notre installation en vérifiant la version de kubectl :
-```bash
-kubectl version
 ```
-
-### Installation de Minikube
-Une fois les prérequis satisfaits, on peut à ce moment-là, passer à l'étape d'installation de **Minikube**.
-```bash
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
-&& chmod +x minikube
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
 ```
-Déplaçons ensuite l’exécutable Minikube dans le dossier binaire des utilisateurs :
 ```bash
-sudo mv minikube /usr/local/bin
+sudo sysctl --system
 ```
-Analysons ensuite le bon déroulement de notre installation en révélant la version de notre Minikube :
+#### Installer Containerd
 ```bash
-minikube version
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo dnf install containerd.io -y
+containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+sudo systemctl restart containerd
+sudo systemctl enable containerd
 ```
-
-### Création du cluster Kubernetes avec Minikube
-À présent, il est temps de démarrer Minikube afin de créer notre premier cluster Kubernetes. La commande que nous allons exécuter va créer et configurer une machine virtuelle qui exécute un cluster Kubernetes à un seul nœud, elle configurera également notre installation de kubectl de manière à communiquer avec notre cluster.
+#### Installer Kubernetes
 ```bash
-minikube start
+sudo cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
 ```
-
-**Résultat**
-
 ```bash
-😄  minikube v1.2.0 on linux (amd64)
-💿  Downloading Minikube ISO ...
-    129.33 MB / 129.33 MB [============================================] 100.00% 0s
-🔥  Creating virtualbox VM (CPUs=2, Memory=2048MB, Disk=20000MB) ...
-🐳  Configuring environment for Kubernetes v1.15.0 on Docker 18.09.6
-💾  Downloading kubeadm v1.15.0
-💾  Downloading kubelet v1.15.0
-🚜  Pulling images ...
-🚀  Launching Kubernetes ... 
-⌛  Verifying: apiserver proxy etcd scheduler controller dns
-🏄  Done! kubectl is now configured to use "minikube"
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
 ```
-
-Si vous souhaitez utiliser votre machine physique en tant que noeud, alors utilisez l'option **--vm-driver** de la commande `minikube start` avec la valeur **none**. Cette option exécutera les composants Kubernetes sur votre machine hôte et non sur une machine virtuelle à condition de posséder le moteur Docker sur votre machine.
+#### Ouvrir les ports du Firewall
+Sur les **Masters**:
 ```bash
-minikube start --vm-dirver=none
+sudo firewall-cmd --permanent --add-port={6443,2379,2380,10250,10251,10252,10257,10259,179}/tcp
+sudo firewall-cmd --permanent --add-port=4789/udp
+sudo firewall-cmd --reload
 ```
-
-Vous pouvez également personnaliser votre noeud en utilisant certaines options de la commande `minikube start`. Vous pouvez retrouver la configuration complète de Minikube dans le fichier : 
+Sur les **Workers**:
 ```bash
-cat ~/.minikube/machines/minikube/config.json
-```
-Pour obtenir les noms des champs configurables de notre nœud Minikube, nous exécuterons alors la commande suivante :
-```bash
-minikube config -h
+sudo firewall-cmd --permanent --add-port={179,10250,30000-32767}/tcp
+sudo firewall-cmd --permanent --add-port=4789/udp
+sudo firewall-cmd --reload
 ```
 
-### Manipulation du cluster Kubernetes avec Minikube
-Commençons par vérifie l'état de notre cluster :
+#### Configuration d'un cluster K8S
+**Master**:
 ```bash
-minikube stauts
+sudo kubeadm init --control-plane-endpoint=k8s-master-01
 ```
-On va utiliser l'outil kubectl afin de récupérer la liste des nœuds de notre cluster Kubernetes :
-```bash
-kubectl get node
+Resultat :
 ```
-On va utiliser l'outil kubectl afin de récupérer la liste des nœuds de notre cluster Kubernetes :
-```bash
-kubectl cluster-info
-```
-Si jamais, vous rencontrez quelques soucis avec votre cluster Kubernetes, n'hésitez alors pas à fouiller dans les logs de Minikube afin de connaître la source du problème :
-```bash
-minikube logs
-```
-Vous n'aurez nullement besoin de vous connecter à la VM Minikube, mais si l'envie vous en dit, alors voici la commande destinée à se connecter directement en ssh à votre nœud Minikube :
-```bash
-minikube ssh
-```
-De la même façon, vous pouvez aussi vérifier si votre minikube est à jour de la façon suivante :
-```bash
-minikube update-check
-```
-Il existe deux façons pour communiquer avec un cluster Kubernetes, soit comme vu antérieurement, en utilisant le binaire kubectl, soit depuis une interface web de management nommé Dashboard. Ça tombe bien car minikube a pensé à nous, dans l'intention de nous faciliter le lancement d'un Dashboard :
-```bash
-minikube dashboard
-```
-Vous n'avez plus besoin de votre cluster Kubernetes, et vous souhaitez vous en débarrasser facilement ? Vous pouvez facilement sans aucune résistance supprimer votre cluster Minikube, à l'aide de la commande suivante :
-```bash
-minikube delete
-```
+Your Kubernetes control-plane has initialized successfully!
 
-Minikube est un outil qui facile grandement la gestion d'un cluster Kubernetes. Cependant, cette méthode connait quelques limites, notamment le fait qu'on ne peut déployer qu'un noeud unique qui est à la fois de type Master et Workers.
-Pour éviter ce problème, nous allons donc dans cet article mettre en place un cluster Kubernetes multi-nœud. Nous allons automatiser l'aménagement de notre cluster Kubernetes multi-nœud. Pour cela, nous utiliserons l'outil Vagrant et Ansible. D'un côté, vagrant sera utilisé pour créer et provisionner nos machines virtuelles à l'aide de l'hyperviseur Virtualbox et d'un autre côté, Ansible sera utilisé pour installer et configurer l'environnement Kubernetes.
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+  kubeadm join k8s-master-01:6443 --token 9j5eqt.eypgpo2hjz8no2xp \
+        --discovery-token-ca-cert-hash sha256:871803dd4cbc27cd7cce212cd467636b84ed2795501c5aa47a572a040cdaaee0 \
+        --control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join k8s-master-01:6443 --token 9j5eqt.eypgpo2hjz8no2xp \
+        --discovery-token-ca-cert-hash sha256:871803dd4cbc27cd7cce212cd467636b84ed2795501c5aa47a572a040cdaaee0
+```
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+**Worker**:
+Récupérer la commande dans la sortie de la commande exécuter sur le Master.
+```bash
+kubeadm join k8s-master-01:6443 --token 9j5eqt.eypgpo2hjz8no2xp \
+    --discovery-token-ca-cert-hash sha256:871803dd4cbc27cd7cce212cd467636b84ed2795501c5aa47a572a040cdaaee0
+```
+#### Installer Calico
+Sur le **Master**:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
+kubectl get pods -n kube-system
+```
+Attendre que tous les pods soit en "Running"
+#### Premier déploiement 
+```bash
+kubectl create deployment web-app01 --image nginx --replicas 2
+kubectl expose deployment web-app01 --type NodePort --port 80
+kubectl get deployment web-app01
+kubectl get pods -o wide
+kubectl get svc web-app01
+```
 
 
 
