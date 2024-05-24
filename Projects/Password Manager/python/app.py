@@ -1,6 +1,7 @@
+from tkinter import *
 
-import os
-import sys
-from getpass import getpass
-import string
+window = Tk()
+label = Label(window, text="Hello World")
+label.pack()
 
+window.mainloop()
